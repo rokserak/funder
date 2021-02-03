@@ -1,6 +1,6 @@
 import os
 import asyncio
-from bfxapi.rest.bfx_rest import BfxRest
+from src.funder import Funder
 
 print('api key =', os.getenv('API_KEY'))
 print('api secret =', os.getenv('API_SECRET'))
@@ -13,9 +13,17 @@ if api_key is None or api_secret is None:
 
 symbol = 'fUSD'
 
-async def get_loan():
-  btx = BfxRest(api_key, api_secret, logLevel='DEBUG')
-  loans = await btx.get_funding_credits(symbol=symbol)
-  print(loans[0])
+async def main():
+  funder = Funder(api_key, api_secret, symbol)
+  offer = await funder.get_min_offer()
+  print('offer', offer)
 
-asyncio.run(get_loan())
+  offers = await funder.get_offers()
+  for i, o in enumerate(offers):
+    print('offer', i, o)
+
+  wallet = await funder.get_funds()
+  print(wallet)
+
+if __name__ == '__main__':
+  asyncio.run(main())
