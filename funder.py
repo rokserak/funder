@@ -1,4 +1,4 @@
-from typing import Awaitable, List, Optional
+from typing import List, Optional
 from bfxapi.rest.bfx_rest import BfxRest
 from bfxapi.models.notification import Notification, NotificationError
 from bfxapi.models.funding_offer import FundingOffer
@@ -13,38 +13,33 @@ class Funder:
     def __init__(self, api_key: str, api_secret: str):
         self.bfx = BfxRest(api_key, api_secret)
 
-    async def get_all_funds(self) -> Awaitable[Optional[float]]:
+    async def get_all_funds(self) -> float:
         """
         get all funds in funding wallet
         """
         wallets = await self.bfx.get_wallets()
-        funding_wallet = filter(lambda w: w.type == 'funding' and w.currency in self.SYMBOL, wallets)
-        # iterator have no len(), so just return first wallet in loop
-        for fw in funding_wallet:
-            return fw.balance
-        return None
+        wallet_type = 'funding'
+        funding_wallet = filter(lambda w: w.type == wallet_type and w.currency in self.SYMBOL, wallets)
+        return next(funding_wallet).balance
 
-    async def get_funds(self) -> Awaitable[Optional[float]]:
+    async def get_funds(self) -> float:
         """
         get available funds
         """
-        all_funds = await self.get_all_funds()
-        if all_funds is None:
-            return None
-        offers = await self.get_offers()
-        offered_funds = sum(o.amount for o in offers)
-        provided = await self.get_provided()
-        provided_funds = sum(p.amount for p in provided)
-        return all_funds - offered_funds - provided_funds
+        api_route = 'auth/calc/order/avail'
+        offer_type = 'FUNDING'
+        funds = await self.bfx.post(api_route, dict(symbol=self.SYMBOL,
+                                                    type=offer_type))
+        return abs(funds[0])
 
-    async def get_min_offer_rate(self) -> Awaitable[float]:
+    async def get_min_offer_rate(self) -> float:
         """
         current min offer rate
         """
         book = await self.bfx.get_public_books(self.SYMBOL)
         return min(book, key=lambda x: x[0])[0]
 
-    async def make_offer(self, amount: int, rate: float, period: int = 2) -> Awaitable[Optional[Notification]]:
+    async def make_offer(self, amount: float, rate: float, period: int=2) -> Optional[Notification]:
         """
         make offer of specified amount and at specified interest rate
         """
@@ -54,7 +49,7 @@ class Funder:
         print('Offer made', notification)
         return notification
 
-    async def cancel_offer(self, offer_id: int) -> Awaitable[Notification]:
+    async def cancel_offer(self, offer_id: int) -> Notification:
         """
         cancel specified offer
         """
@@ -62,13 +57,13 @@ class Funder:
         print('Offer canceled', notification)
         return notification
 
-    async def get_offers(self) -> Awaitable[List[FundingOffer]]:
+    async def get_offers(self) -> List[FundingOffer]:
         """
         get offered funds
         """
         return await self.bfx.get_funding_offers(self.SYMBOL)
 
-    async def get_provided(self) -> Awaitable[List[FundingCredit]]:
+    async def get_provided(self) -> List[FundingCredit]:
         """
         get provided funds
         """

@@ -30,8 +30,7 @@ Make sure to add API key and secret to `Dockerfile`.
 ```sh
 docker-compose build
 docker-compose up -d
-docker-compose exec funder bash
-python main.py
+docker-compose exec funder python main.py
 ```
 
 
