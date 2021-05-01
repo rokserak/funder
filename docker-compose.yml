@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  funder:
+    build: .
+    stdin_open: true
+    tty: true
+    volumes:
+    - .:/usr/src/app

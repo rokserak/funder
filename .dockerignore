@@ -1,0 +1,8 @@
+README.md
+LICENSE
+.idea
+.git
+.gitignore
+.env.example
+Pipfile
+Pipfile.lock

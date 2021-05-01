@@ -13,7 +13,7 @@ any dividends.
 
 ## Usage
 
-### Locally with pipenv
+### Development with pipenv
 
 First make sure you create `.env` file with API key and secret, check `.env.example` for necessary variables.
 
@@ -23,11 +23,23 @@ pipenv shell
 python main.py
 ```
 
-### With docker
+### Development with docker-compose
 
 Make sure to add API key and secret to `Dockerfile`.
 
 ```sh
+docker-compose build
+docker-compose up -d
+docker-compose exec funder bash
+python main.py
+```
+
+
+### Deployment
+
+Make sure to add API key and secret to `Dockerfile` and uncomment last line.
+
+```sh
 docker build -t funder .
-docker run -t funder
+docker run --detach --restart unless-stopped funder
 ```
