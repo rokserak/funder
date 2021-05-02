@@ -1,3 +1,4 @@
+import math
 from datetime import datetime
 from typing import List, Optional
 from bfxapi.rest.bfx_rest import BfxRest
@@ -31,7 +32,14 @@ class Funder:
         offer_type = 'FUNDING'
         funds = await self.bfx.post(api_route, dict(symbol=self.SYMBOL,
                                                     type=offer_type))
-        return abs(funds[0])
+
+        def truncate(number: float, digits: int) -> float:
+            stepper = 10.0 ** digits
+            return math.trunc(stepper * number) / stepper
+
+        funds = abs(funds[0])
+        # Bitfinex likes to round numbers up which sucks when order amount is 0.000001 to high
+        return truncate(funds, 5)
 
     async def get_min_offer_rate(self) -> float:
         """
