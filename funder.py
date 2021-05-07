@@ -1,5 +1,4 @@
 import math
-from datetime import datetime
 from typing import List, Optional
 from bfxapi.rest.bfx_rest import BfxRest
 from bfxapi.models.notification import Notification, NotificationError
@@ -54,17 +53,13 @@ class Funder:
         """
         if amount is None or amount < self.MIN_FUND_OFFER:
             return None
-        notification = await self.bfx.submit_funding_offer(self.SYMBOL, amount, rate, period)
-        print(datetime.now(), 'Offer made', notification)
-        return notification
+        return await self.bfx.submit_funding_offer(self.SYMBOL, amount, rate, period)
 
     async def cancel_offer(self, offer_id: int) -> Notification:
         """
         cancel specified offer
         """
-        notification = await self.bfx.submit_cancel_funding_offer(offer_id)
-        print(datetime.now(), 'Offer canceled', notification)
-        return notification
+        return await self.bfx.submit_cancel_funding_offer(offer_id)
 
     async def get_offers(self) -> List[FundingOffer]:
         """
@@ -89,6 +84,4 @@ class Funder:
                 notification = await self.cancel_offer(o.id)
                 if notification.status == NotificationError.SUCCESS:
                     funds = await self.get_funds()
-                    notification = await self.make_offer(funds, rate)
-                    if notification is not None:
-                        print(datetime.now(), 'Offer renewed', notification)
+                    await self.make_offer(funds, rate)

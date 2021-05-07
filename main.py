@@ -14,21 +14,10 @@ async def main():
     funder = Funder(api_key, api_secret)
     while True:
         funds = await funder.get_funds()
-        print(datetime.now(), 'Available funds', funds)
-
         rate = await funder.get_min_offer_rate()
-        print(datetime.now(), 'Min offer rate', rate)
-
         status = await funder.make_offer(funds, rate)
-        print(datetime.now(), 'Offer made', status)
-
-        offers = await funder.get_offers()
-        for i, o in enumerate(offers):
-            print(datetime.now(), 'Offer', i, o)
-
-        provided = await funder.get_provided()
-        for i, p in enumerate(provided):
-            print(datetime.now(), 'Provided', i, p)
+        if status is not None:
+            print(datetime.now(), 'Offer made', status)
 
         await funder.renew_offers()
         await asyncio.sleep(60)
